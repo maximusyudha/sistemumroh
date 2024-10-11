@@ -139,7 +139,7 @@ export async function DELETE(request: Request) {
   }
 }
 
-export async function UPDATE(request: Request) { 
+export async function PUT(request: Request) { 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
