@@ -56,15 +56,25 @@ const JamaahService = {
     return response.json();
   },
   
-  delete: async (id: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+// JamaahService.ts
+async delete(id: number) {
+  const response = await fetch(`/api/jamaah?id=${id}`, {
+    method: 'DELETE',
+  });
 
-    if (!response.ok) {
-      const errorBody = await response.text(); 
-      console.error(`Failed to delete Jamaah with id ${id}:`, errorBody);
-      throw new Error(`Failed to delete Jamaah with id ${id}`);
+  if (!response.ok) {
+    const errorBody = await response.text(); // Capture and log more specific error information
+    console.error(`Failed to delete Jamaah with id ${id}:`, errorBody);
+
+    if (response.status === 404) {
+      throw new Error(`Jamaah with id ${id} not found`);
     }
-  },
+
+    throw new Error(`Failed to delete Jamaah with id ${id}`);
+  }
+
+  return response.json();
+}
 };
 
 export default JamaahService;

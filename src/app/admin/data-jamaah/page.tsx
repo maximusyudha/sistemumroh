@@ -24,10 +24,30 @@ const DataJamaahPage = () => {
   
 
   const handleDelete = (id: string) => {
-    JamaahService.delete(id).then(() => {
-      setJamaahList(jamaahList.filter((item) => item.id !== id));
-    });
+    // Convert the id from string to number using Number()
+    const idNumber: number = Number(id);  // Correctly using Number constructor
+  
+    // Check if the conversion resulted in a valid number
+    if (isNaN(idNumber)) {
+      console.error(`Invalid ID: ${id}`);
+      alert(`Invalid ID: ${id}`);
+      return; // Exit if ID is invalid
+    }
+  
+    JamaahService.delete(idNumber)
+      .then(() => {
+        // Update the list by filtering out the deleted Jamaah
+        setJamaahList(jamaahList.filter((item) => item.id !== id));
+      })
+      .catch(error => {
+        // Handle any errors during deletion
+        console.error(`Error deleting Jamaah with id ${id}:`, error);
+        alert(`Failed to delete Jamaah: ${error.message}`);
+      });
   };
+  
+  
+  
 
   const handleEdit = (id: string) => {
     router.push(`/admin/data-jamaah/edit/${id}`); 

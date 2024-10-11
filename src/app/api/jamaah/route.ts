@@ -3,6 +3,7 @@ import { prisma } from '../../lib/prisma';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
+import { Prisma } from '@prisma/client';
 
 // Define the upload directory
 const uploadDirectory = path.join(process.cwd(), 'public', 'uploads');
@@ -123,21 +124,32 @@ export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
-  if (!id) {
-    return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+  // Ensure the ID is present and valid
+  if (!id || isNaN(Number(id))) {
+    return NextResponse.json({ error: 'Valid ID is required' }, { status: 400 });
   }
 
   try {
-    await prisma.jamaah.delete({
-      where: { id: Number(id) }, 
+    // Try to delete the Jamaah
+    const deletedJamaah = await prisma.jamaah.delete({
+      where: { id: Number(id) },
     });
-    return NextResponse.json({ message: 'Jamaah deleted successfully' });
+
+    // Return a success response if deletion was successful
+    return NextResponse.json({ message: 'Jamaah deleted successfully', data: deletedJamaah });
   } catch (error) {
+    // Check for the Prisma-specific error that indicates the record doesn't exist
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      return NextResponse.json({ error: 'Jamaah not found' }, { status: 404 });
+    }
+
+    // General error handling
     const errorMessage = (error instanceof Error) ? error.message : 'Unknown error occurred';
     console.error('Error deleting Jamaah:', errorMessage);
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
+
 
 export async function PUT(request: Request) { 
   const { searchParams } = new URL(request.url);
