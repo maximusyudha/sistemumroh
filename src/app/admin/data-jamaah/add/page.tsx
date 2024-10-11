@@ -1,8 +1,7 @@
 'use client'
 import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Use for redirection after form submission
-import JamaahService from '../../../../services/JamaahService'; // Assume this is available
-
+import { useRouter } from 'next/navigation'; 
+import JamaahService from '../../../../services/JamaahService'; 
 const AddJamaahPage = () => {
   const router = useRouter();
   
@@ -26,6 +25,9 @@ const AddJamaahPage = () => {
   const [berlakuVisa, setBerlakuVisa] = useState('');
   const [paketDipilih, setPaketDipilih] = useState('');
   const [kamarDipilih, setKamarDipilih] = useState('Quint');
+
+
+  
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<File | null>>) => {
     if (e.target.files && e.target.files[0]) {
@@ -67,11 +69,13 @@ const AddJamaahPage = () => {
       console.error('Error creating Jamaah:', error);
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8 flex flex-col items-center">
       <h1 className="text-3xl font-bold mb-8">Tambah Data Jamaah</h1>
       <form onSubmit={handleSubmit} className="w-full max-w-3xl bg-gray-800 p-6 rounded-lg shadow-lg space-y-6">
+        
         {/* Nama Lengkap */}
         <div>
           <label className="block mb-2">Nama Lengkap Jamaah</label>
