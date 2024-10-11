@@ -2,9 +2,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation'; 
 import JamaahService from '../../../../services/JamaahService'; 
+
 const AddJamaahPage = () => {
   const router = useRouter();
-  
+
   const [namaLengkap, setNamaLengkap] = useState('');
   const [nik, setNik] = useState('');
   const [tempatLahir, setTempatLahir] = useState('');
@@ -25,9 +26,6 @@ const AddJamaahPage = () => {
   const [berlakuVisa, setBerlakuVisa] = useState('');
   const [paketDipilih, setPaketDipilih] = useState('');
   const [kamarDipilih, setKamarDipilih] = useState('Quint');
-
-
-  
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<File | null>>) => {
     if (e.target.files && e.target.files[0]) {
@@ -56,7 +54,6 @@ const AddJamaahPage = () => {
     formData.append('paketDipilih', paketDipilih);
     formData.append('kamarDipilih', kamarDipilih);
     
-
     if (lampiranKTP) formData.append('lampiranKTP', lampiranKTP);
     if (lampiranKK) formData.append('lampiranKK', lampiranKK);
     if (lampiranFoto) formData.append('lampiranFoto', lampiranFoto);
@@ -69,7 +66,11 @@ const AddJamaahPage = () => {
       console.error('Error creating Jamaah:', error);
     }
   };
-  
+
+  const provinsiOptions = ['Jawa Barat', 'Jawa Tengah', 'Jawa Timur'];
+  const kabKotaOptions = ['Bandung', 'Semarang', 'Surabaya'];
+  const kecamatanOptions = ['Kecamatan A', 'Kecamatan B', 'Kecamatan C'];
+  const kelurahanOptions = ['Kelurahan X', 'Kelurahan Y', 'Kelurahan Z'];
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8 flex flex-col items-center">
@@ -146,7 +147,9 @@ const AddJamaahPage = () => {
               required
             >
               <option value="">Pilih Provinsi</option>
-              
+              {provinsiOptions.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
             </select>
           </div>
           <div>
@@ -158,7 +161,9 @@ const AddJamaahPage = () => {
               required
             >
               <option value="">Pilih Kab/Kota</option>
-              
+              {kabKotaOptions.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
             </select>
           </div>
           <div>
@@ -170,7 +175,9 @@ const AddJamaahPage = () => {
               required
             >
               <option value="">Pilih Kecamatan</option>
-              
+              {kecamatanOptions.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
             </select>
           </div>
           <div>
@@ -182,7 +189,9 @@ const AddJamaahPage = () => {
               required
             >
               <option value="">Pilih Kelurahan/Desa</option>
-              
+              {kelurahanOptions.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -190,31 +199,19 @@ const AddJamaahPage = () => {
         {/* Jenis Kelamin */}
         <div>
           <label className="block mb-2">Jenis Kelamin</label>
-          <div className="flex gap-4">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                value="Laki-Laki"
-                onChange={() => setJenisKelamin('Laki-Laki')}
-                checked={jenisKelamin === 'Laki-Laki'}
-                className="mr-2"
-              />
-              Laki-Laki
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                value="Perempuan"
-                onChange={() => setJenisKelamin('Perempuan')}
-                checked={jenisKelamin === 'Perempuan'}
-                className="mr-2"
-              />
-              Perempuan
-            </label>
-          </div>
+          <select
+            value={jenisKelamin}
+            onChange={(e) => setJenisKelamin(e.target.value)}
+            className="w-full px-4 py-2 bg-gray-700 rounded-md focus:outline-none"
+            required
+          >
+            <option value="">Pilih Jenis Kelamin</option>
+            <option value="Laki-laki">Laki-laki</option>
+            <option value="Perempuan">Perempuan</option>
+          </select>
         </div>
 
-        {/* Paspor */}
+        {/* No Paspor & Masa Berlaku Paspor */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block mb-2">No Paspor</label>
@@ -223,6 +220,7 @@ const AddJamaahPage = () => {
               value={noPaspor}
               onChange={(e) => setNoPaspor(e.target.value)}
               className="w-full px-4 py-2 bg-gray-700 rounded-md focus:outline-none"
+              required
             />
           </div>
           <div>
@@ -232,18 +230,19 @@ const AddJamaahPage = () => {
               value={masaBerlakuPaspor}
               onChange={(e) => setMasaBerlakuPaspor(e.target.value)}
               className="w-full px-4 py-2 bg-gray-700 rounded-md focus:outline-none"
+              required
             />
           </div>
         </div>
 
-        {/* Lampiran Upload */}
+        {/* Lampiran KTP, KK, Foto, Paspor */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block mb-2">Lampiran KTP</label>
             <input
               type="file"
               onChange={(e) => handleFileChange(e, setLampiranKTP)}
-              className="w-full px-4 py-2 bg-gray-700 rounded-md focus:outline-none"
+              className="w-full bg-gray-700 rounded-md focus:outline-none"
               required
             />
           </div>
@@ -252,16 +251,16 @@ const AddJamaahPage = () => {
             <input
               type="file"
               onChange={(e) => handleFileChange(e, setLampiranKK)}
-              className="w-full px-4 py-2 bg-gray-700 rounded-md focus:outline-none"
+              className="w-full bg-gray-700 rounded-md focus:outline-none"
               required
             />
           </div>
           <div>
-            <label className="block mb-2">Lampiran Foto Diri</label>
+            <label className="block mb-2">Lampiran Foto</label>
             <input
               type="file"
               onChange={(e) => handleFileChange(e, setLampiranFoto)}
-              className="w-full px-4 py-2 bg-gray-700 rounded-md focus:outline-none"
+              className="w-full bg-gray-700 rounded-md focus:outline-none"
               required
             />
           </div>
@@ -270,15 +269,16 @@ const AddJamaahPage = () => {
             <input
               type="file"
               onChange={(e) => handleFileChange(e, setLampiranPaspor)}
-              className="w-full px-4 py-2 bg-gray-700 rounded-md focus:outline-none"
+              className="w-full bg-gray-700 rounded-md focus:outline-none"
+              required
             />
           </div>
         </div>
 
-        {/* No Visa (Optional) */}
+        {/* No Visa & Berlaku Visa */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block mb-2">No Visa (Opsional)</label>
+            <label className="block mb-2">No Visa</label>
             <input
               type="text"
               value={noVisa}
@@ -287,7 +287,7 @@ const AddJamaahPage = () => {
             />
           </div>
           <div>
-            <label className="block mb-2">Berlaku Sampai (Opsional)</label>
+            <label className="block mb-2">Berlaku Visa</label>
             <input
               type="date"
               value={berlakuVisa}
@@ -307,63 +307,34 @@ const AddJamaahPage = () => {
             required
           >
             <option value="">Pilih Paket</option>
-            <option value="Paket Itikaf">Paket Itikaf</option>
-            <option value="Paket Reguler">Paket Reguler</option>
-            <option value="Paket VIP">Paket VIP</option>
+            <option value="Paket A">Paket A</option>
+            <option value="Paket B">Paket B</option>
+            <option value="Paket C">Paket C</option>
           </select>
         </div>
 
         {/* Kamar Dipilih */}
         <div>
           <label className="block mb-2">Kamar Dipilih</label>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setKamarDipilih('Quint')}
-              className={`px-4 py-2 rounded-md ${kamarDipilih === 'Quint' ? 'bg-blue-500' : 'bg-gray-700'}`}
-            >
-              Quint
-            </button>
-            <button
-              type="button"
-              onClick={() => setKamarDipilih('Quad')}
-              className={`px-4 py-2 rounded-md ${kamarDipilih === 'Quad' ? 'bg-blue-500' : 'bg-gray-700'}`}
-            >
-              Quad
-            </button>
-            <button
-              type="button"
-              onClick={() => setKamarDipilih('Triple')}
-              className={`px-4 py-2 rounded-md ${kamarDipilih === 'Triple' ? 'bg-blue-500' : 'bg-gray-700'}`}
-            >
-              Triple
-            </button>
-            <button
-              type="button"
-              onClick={() => setKamarDipilih('Double')}
-              className={`px-4 py-2 rounded-md ${kamarDipilih === 'Double' ? 'bg-blue-500' : 'bg-gray-700'}`}
-            >
-              Double
-            </button>
-            <button
-              type="button"
-              onClick={() => setKamarDipilih('Single')}
-              className={`px-4 py-2 rounded-md ${kamarDipilih === 'Single' ? 'bg-blue-500' : 'bg-gray-700'}`}
-            >
-              Single
-            </button>
-          </div>
+          <select
+            value={kamarDipilih}
+            onChange={(e) => setKamarDipilih(e.target.value)}
+            className="w-full px-4 py-2 bg-gray-700 rounded-md focus:outline-none"
+            required
+          >
+            <option value="Quint">Kamar Quint</option>
+            <option value="Triple">Kamar Triple</option>
+            <option value="Double">Kamar Double</option>
+          </select>
         </div>
 
         {/* Submit Button */}
-        <div className="mt-6">
-          <button
-            type="submit"
-            className="w-full bg-green-600 hover:bg-green-500 px-6 py-3 rounded-md font-semibold text-lg"
-          >
-            Submit
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="w-full py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition duration-200"
+        >
+          Tambah Jamaah
+        </button>
       </form>
     </div>
   );

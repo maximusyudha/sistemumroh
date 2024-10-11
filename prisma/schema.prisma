@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Jamaah {
+  id                String   @id @default(uuid())
+  namaLengkap       String
+  nik               String
+  tempatLahir       String
+  tanggalLahir      DateTime
+  alamat            String
+  provinsi          String
+  kabKota           String
+  kecamatan         String
+  kelurahan         String
+  jenisKelamin      String
+  noPaspor          String
+  masaBerlakuPaspor DateTime
+  noVisa            String?
+  berlakuVisa       DateTime?
+  paketDipilih      String
+  kamarDipilih      String
+  lampiranKTP       String
+  lampiranKK        String
+  lampiranFoto      String
+  lampiranPaspor    String
+}
