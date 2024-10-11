@@ -18,20 +18,20 @@ const AddJamaahPage = () => {
   const [jenisKelamin, setJenisKelamin] = useState('');
   const [noPaspor, setNoPaspor] = useState('');
   const [masaBerlakuPaspor, setMasaBerlakuPaspor] = useState('');
-  const [lampiranKTP, setLampiranKTP] = useState<File | null>(null);
-  const [lampiranKK, setLampiranKK] = useState<File | null>(null);
-  const [lampiranFoto, setLampiranFoto] = useState<File | null>(null);
-  const [lampiranPaspor, setLampiranPaspor] = useState<File | null>(null);
+  // const [lampiranKTP, setLampiranKTP] = useState<File | null>(null);
+  // const [lampiranKK, setLampiranKK] = useState<File | null>(null);
+  // const [lampiranFoto, setLampiranFoto] = useState<File | null>(null);
+  // const [lampiranPaspor, setLampiranPaspor] = useState<File | null>(null);
   const [noVisa, setNoVisa] = useState('');
   const [berlakuVisa, setBerlakuVisa] = useState('');
   const [paketDipilih, setPaketDipilih] = useState('');
   const [kamarDipilih, setKamarDipilih] = useState('Quint');
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<File | null>>) => {
-    if (e.target.files && e.target.files[0]) {
-      setter(e.target.files[0]);
-    }
-  };
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<File | null>>) => {
+  //   if (e.target.files && e.target.files[0]) {
+  //     setter(e.target.files[0]);
+  //   }
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,10 +54,10 @@ const AddJamaahPage = () => {
     formData.append('paketDipilih', paketDipilih);
     formData.append('kamarDipilih', kamarDipilih);
     
-    if (lampiranKTP) formData.append('lampiranKTP', lampiranKTP);
-    if (lampiranKK) formData.append('lampiranKK', lampiranKK);
-    if (lampiranFoto) formData.append('lampiranFoto', lampiranFoto);
-    if (lampiranPaspor) formData.append('lampiranPaspor', lampiranPaspor);
+    // if (lampiranKTP) formData.append('lampiranKTP', lampiranKTP);
+    // if (lampiranKK) formData.append('lampiranKK', lampiranKK);
+    // if (lampiranFoto) formData.append('lampiranFoto', lampiranFoto);
+    // if (lampiranPaspor) formData.append('lampiranPaspor', lampiranPaspor);
 
     try {
       await JamaahService.add(formData); 
@@ -236,7 +236,7 @@ const AddJamaahPage = () => {
         </div>
 
         {/* Lampiran KTP, KK, Foto, Paspor */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block mb-2">Lampiran KTP</label>
             <input
@@ -273,12 +273,12 @@ const AddJamaahPage = () => {
               required
             />
           </div>
-        </div>
+        </div> */}
 
         {/* No Visa & Berlaku Visa */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block mb-2">No Visa</label>
+            <label className="block mb-2">No Visa (optional)</label>
             <input
               type="text"
               value={noVisa}
@@ -287,7 +287,7 @@ const AddJamaahPage = () => {
             />
           </div>
           <div>
-            <label className="block mb-2">Berlaku Visa</label>
+            <label className="block mb-2">Berlaku Visa (optional)</label>
             <input
               type="date"
               value={berlakuVisa}
