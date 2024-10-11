@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '../../lib/prisma';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { supabase } from '../../lib/supabase'; // Import supabase client
 import { randomUUID } from 'crypto';
-
-// Define the upload directory
-const uploadDirectory = path.join(process.cwd(), 'public', 'uploads');
 
 // Function to validate date format (YYYY-MM-DD)
 function isValidDate(dateString: string) {
@@ -15,77 +10,61 @@ function isValidDate(dateString: string) {
 
 // Function to generate unique file name
 const generateUniqueFileName = (originalName: string) => {
-  const fileExtension = path.extname(originalName);
-  const fileNameWithoutExt = path.basename(originalName, fileExtension);
-  return `${fileNameWithoutExt}-${randomUUID()}${fileExtension}`;
+  const fileExtension = originalName.split('.').pop();
+  return `${randomUUID()}.${fileExtension}`;
 };
 
+// GET: Fetch all Jamaah
 export async function GET() {
   try {
-    const jamaahList = await prisma.jamaah.findMany();
-    return NextResponse.json(jamaahList);
+    const { data, error } = await supabase.from('jamaah').select('*');
+    if (error) throw error;
+    return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching Jamaah list:', error);
     return NextResponse.json({ error: 'Error fetching data' }, { status: 500 });
   }
 }
 
+// POST: Add new Jamaah
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const data = Object.fromEntries(formData);
 
-    // Validasi format tanggal lahir dan masa berlaku paspor
+    // Validate date fields
     if (!isValidDate(data.tanggalLahir as string)) {
       throw new Error('Invalid date format for tanggalLahir');
     }
-
     if (data.masaBerlakuPaspor && !isValidDate(data.masaBerlakuPaspor as string)) {
       throw new Error('Invalid date format for masaBerlakuPaspor');
     }
 
-    // Create the upload directory if it doesn't exist
-    await fs.mkdir(uploadDirectory, { recursive: true });
-
-    // File processing
+    // File processing for uploads
     const lampiranKTPFile = formData.get('lampiranKTP') as File | null;
     const lampiranKKFile = formData.get('lampiranKK') as File | null;
     const lampiranFotoFile = formData.get('lampiranFoto') as File | null;
     const lampiranPasporFile = formData.get('lampiranPaspor') as File | null;
 
-    let lampiranKTPFileName = '', lampiranKKFileName = '', lampiranFotoFileName = '', lampiranPasporFileName = '';
+    // Helper function to upload files to Supabase storage
+    const uploadFile = async (file: File | null, folder: string) => {
+      if (!file) return null;
+      const fileName = generateUniqueFileName(file.name);
+      const { data: fileData, error } = await supabase.storage
+        .from(folder)
+        .upload(fileName, file);
+      if (error) throw error;
+      return fileData?.path;
+    };
 
-    // Upload lampiranKTP jika ada
-    if (lampiranKTPFile) {
-      lampiranKTPFileName = generateUniqueFileName(lampiranKTPFile.name);
-      const lampiranKTPPath = path.join(uploadDirectory, lampiranKTPFileName);
-      await fs.writeFile(lampiranKTPPath, Buffer.from(await lampiranKTPFile.arrayBuffer()));
-    }
+    const lampiranKTPPath = await uploadFile(lampiranKTPFile, 'uploads');
+    const lampiranKKPath = await uploadFile(lampiranKKFile, 'uploads');
+    const lampiranFotoPath = await uploadFile(lampiranFotoFile, 'uploads');
+    const lampiranPasporPath = await uploadFile(lampiranPasporFile, 'uploads');
 
-    // Upload lampiranKK jika ada
-    if (lampiranKKFile) {
-      lampiranKKFileName = generateUniqueFileName(lampiranKKFile.name);
-      const lampiranKKPath = path.join(uploadDirectory, lampiranKKFileName);
-      await fs.writeFile(lampiranKKPath, Buffer.from(await lampiranKKFile.arrayBuffer()));
-    }
-
-    // Upload lampiranFoto jika ada
-    if (lampiranFotoFile) {
-      lampiranFotoFileName = generateUniqueFileName(lampiranFotoFile.name);
-      const lampiranFotoPath = path.join(uploadDirectory, lampiranFotoFileName);
-      await fs.writeFile(lampiranFotoPath, Buffer.from(await lampiranFotoFile.arrayBuffer()));
-    }
-
-    // Upload lampiranPaspor jika ada
-    if (lampiranPasporFile) {
-      lampiranPasporFileName = generateUniqueFileName(lampiranPasporFile.name);
-      const lampiranPasporPath = path.join(uploadDirectory, lampiranPasporFileName);
-      await fs.writeFile(lampiranPasporPath, Buffer.from(await lampiranPasporFile.arrayBuffer()));
-    }
-
-    // Insert new Jamaah into the database
-    const newJamaah = await prisma.jamaah.create({
-      data: {
+    // Insert new Jamaah into the Supabase database
+    const { data: newJamaah, error } = await supabase.from('jamaah').insert([
+      {
         namaLengkap: String(data.namaLengkap),
         nik: String(data.nik),
         tempatLahir: String(data.tempatLahir),
@@ -102,15 +81,16 @@ export async function POST(request: Request) {
         berlakuVisa: data.berlakuVisa ? new Date(data.berlakuVisa as string) : null,
         paketDipilih: String(data.paketDipilih),
         kamarDipilih: String(data.kamarDipilih),
-        lampiranKTP: lampiranKTPFileName ? `/uploads/${lampiranKTPFileName}`: String(data.lampiranKTP),
-        lampiranKK: lampiranKKFileName ? `/uploads/${lampiranKKFileName}` : String(data.lampiranKK),
-        lampiranFoto: lampiranFotoFileName ? `/uploads/${lampiranFotoFileName}` : String(data.lampiranFoto),
-        lampiranPaspor: lampiranPasporFileName ? `/uploads/${lampiranPasporFileName}` : String(data.lampiranPaspor),
+        lampiranKTP: lampiranKTPPath ? `/storage/uploads/${lampiranKTPPath}` : String(data.lampiranKTP),
+        lampiranKK: lampiranKKPath ? `/storage/uploads/${lampiranKKPath}` : String(data.lampiranKK),
+        lampiranFoto: lampiranFotoPath ? `/storage/uploads/${lampiranFotoPath}` : String(data.lampiranFoto),
+        lampiranPaspor: lampiranPasporPath ? `/storage/uploads/${lampiranPasporPath}` : String(data.lampiranPaspor),
       },
-    });
+    ]);
+
+    if (error) throw error;
 
     console.log('New Jamaah created:', newJamaah);
-
     return NextResponse.json(newJamaah);
   } catch (error) {
     const errorMessage = (error instanceof Error) ? error.message : 'Unknown error occurred';
@@ -119,6 +99,7 @@ export async function POST(request: Request) {
   }
 }
 
+// DELETE: Remove Jamaah by ID
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
@@ -128,9 +109,8 @@ export async function DELETE(request: Request) {
   }
 
   try {
-    await prisma.jamaah.delete({
-      where: { id: Number(id) }, 
-    });
+    const { error } = await supabase.from('jamaah').delete().eq('id', Number(id));
+    if (error) throw error;
     return NextResponse.json({ message: 'Jamaah deleted successfully' });
   } catch (error) {
     const errorMessage = (error instanceof Error) ? error.message : 'Unknown error occurred';
@@ -139,7 +119,8 @@ export async function DELETE(request: Request) {
   }
 }
 
-export async function PUT(request: Request) { 
+// PUT: Update Jamaah by ID
+export async function PUT(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
@@ -147,47 +128,39 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Valid ID is required' }, { status: 400 });
   }
 
-  try { 
-    const jamaah = await prisma.jamaah.findUnique({ where: { id: Number(id) } });
-    if (!jamaah) {
-      return NextResponse.json({ error: 'Jamaah not found' }, { status: 404 });
-    }
-
-    const data = await request.json();
-
-    // Validate dates before updating
-    if (!isValidDate(data.tanggalLahir as string) || 
-        (data.masaBerlakuPaspor && !isValidDate(data.masaBerlakuPaspor as string))) {
+  try {
+    const { data } = await request.json();
+    if (!isValidDate(data.tanggalLahir as string) ||
+      (data.masaBerlakuPaspor && !isValidDate(data.masaBerlakuPaspor as string))) {
       return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
     }
 
-    const updatedJamaah = await prisma.jamaah.update({
-      where: { id: Number(id) },
-      data: {
-        namaLengkap: String(data.namaLengkap),
-        nik: String(data.nik),
-        tempatLahir: String(data.tempatLahir),
-        tanggalLahir: new Date(data.tanggalLahir as string),
-        alamat: String(data.alamat),
-        provinsi: String(data.provinsi),
-        kabKota: String(data.kabKota),
-        kecamatan: String(data.kecamatan),
-        kelurahan: String(data.kelurahan),
-        jenisKelamin: String(data.jenisKelamin),
-        noPaspor: String(data.noPaspor),
-        masaBerlakuPaspor: new Date(data.masaBerlakuPaspor as string),  
-        noVisa: data.noVisa ? String(data.noVisa) : null,
-        berlakuVisa: data.berlakuVisa ? new Date(data.berlakuVisa as string) : null,
-        paketDipilih: String(data.paketDipilih),
-        kamarDipilih: String(data.kamarDipilih),
-        lampiranKTP: String(data.lampiranKTP),
-        lampiranKK: String(data.lampiranKK),
-        lampiranFoto: String(data.lampiranFoto),
-        lampiranPaspor: String(data.lampiranPaspor),
-      },
-    });
+    const { error } = await supabase.from('jamaah').update({
+      namaLengkap: String(data.namaLengkap),
+      nik: String(data.nik),
+      tempatLahir: String(data.tempatLahir),
+      tanggalLahir: new Date(data.tanggalLahir as string),
+      alamat: String(data.alamat),
+      provinsi: String(data.provinsi),
+      kabKota: String(data.kabKota),
+      kecamatan: String(data.kecamatan),
+      kelurahan: String(data.kelurahan),
+      jenisKelamin: String(data.jenisKelamin),
+      noPaspor: String(data.noPaspor),
+      masaBerlakuPaspor: new Date(data.masaBerlakuPaspor as string),
+      noVisa: data.noVisa ? String(data.noVisa) : null,
+      berlakuVisa: data.berlakuVisa ? new Date(data.berlakuVisa as string) : null,
+      paketDipilih: String(data.paketDipilih),
+      kamarDipilih: String(data.kamarDipilih),
+      lampiranKTP: String(data.lampiranKTP),
+      lampiranKK: String(data.lampiranKK),
+      lampiranFoto: String(data.lampiranFoto),
+      lampiranPaspor: String(data.lampiranPaspor),
+    }).eq('id', Number(id));
 
-    return NextResponse.json(updatedJamaah);
+    if (error) throw error;
+
+    return NextResponse.json({ message: 'Jamaah updated successfully' });
   } catch (error) {
     const errorMessage = (error instanceof Error) ? error.message : 'Unknown error occurred';
     console.error('Error updating Jamaah:', errorMessage);
