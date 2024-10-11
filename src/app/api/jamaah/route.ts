@@ -138,3 +138,59 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
+
+export async function UPDATE(request: Request) { 
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  if (!id || isNaN(Number(id))) {
+    return NextResponse.json({ error: 'Valid ID is required' }, { status: 400 });
+  }
+
+  try { 
+    const jamaah = await prisma.jamaah.findUnique({ where: { id: Number(id) } });
+    if (!jamaah) {
+      return NextResponse.json({ error: 'Jamaah not found' }, { status: 404 });
+    }
+
+    const data = await request.json();
+
+    // Validate dates before updating
+    if (!isValidDate(data.tanggalLahir as string) || 
+        (data.masaBerlakuPaspor && !isValidDate(data.masaBerlakuPaspor as string))) {
+      return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
+    }
+
+    const updatedJamaah = await prisma.jamaah.update({
+      where: { id: Number(id) },
+      data: {
+        namaLengkap: String(data.namaLengkap),
+        nik: String(data.nik),
+        tempatLahir: String(data.tempatLahir),
+        tanggalLahir: new Date(data.tanggalLahir as string),
+        alamat: String(data.alamat),
+        provinsi: String(data.provinsi),
+        kabKota: String(data.kabKota),
+        kecamatan: String(data.kecamatan),
+        kelurahan: String(data.kelurahan),
+        jenisKelamin: String(data.jenisKelamin),
+        noPaspor: String(data.noPaspor),
+        masaBerlakuPaspor: new Date(data.masaBerlakuPaspor as string),  
+        noVisa: data.noVisa ? String(data.noVisa) : null,
+        berlakuVisa: data.berlakuVisa ? new Date(data.berlakuVisa as string) : null,
+        paketDipilih: String(data.paketDipilih),
+        kamarDipilih: String(data.kamarDipilih),
+        lampiranKTP: String(data.lampiranKTP),
+        lampiranKK: String(data.lampiranKK),
+        lampiranFoto: String(data.lampiranFoto),
+        lampiranPaspor: String(data.lampiranPaspor),
+      },
+    });
+
+    return NextResponse.json(updatedJamaah);
+  } catch (error) {
+    const errorMessage = (error instanceof Error) ? error.message : 'Unknown error occurred';
+    console.error('Error updating Jamaah:', errorMessage);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
+}

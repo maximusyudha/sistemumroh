@@ -6,7 +6,9 @@ const JamaahService = {
   getAll: async (): Promise<Jamaah[]> => {
     const response = await fetch(API_URL);
     if (!response.ok) {
-      console.error('Failed to fetch Jamaah data');
+      const errorBody = await response.text(); 
+      console.error('Failed to fetch Jamaah data:', errorBody);
+      throw new Error('Failed to fetch Jamaah data');
     }
     return response.json();
   },
@@ -14,7 +16,9 @@ const JamaahService = {
   getById: async (id: string): Promise<Jamaah> => {
     const response = await fetch(`${API_URL}/${id}`);
     if (!response.ok) {
-      console.error(`Failed to fetch Jamaah with id ${id}`);
+      const errorBody = await response.text(); 
+      console.error(`Failed to fetch Jamaah with id ${id}:`, errorBody);
+      throw new Error(`Failed to fetch Jamaah with id ${id}`);
     }
     return response.json();
   },
@@ -24,10 +28,10 @@ const JamaahService = {
       method: 'POST',
       body: data,
     });
-  
+
     if (!response.ok) {
       const errorBody = await response.text(); 
-      console.error('Error response:', errorBody);
+      console.error('Error response when adding Jamaah:', errorBody);
       throw new Error('Failed to create Jamaah');
     }
   
@@ -44,6 +48,8 @@ const JamaahService = {
     });
 
     if (!response.ok) {
+      const errorBody = await response.text(); // Capture the error body
+      console.error(`Failed to update Jamaah with id ${id}:`, errorBody);
       throw new Error(`Failed to update Jamaah with id ${id}`);
     }
 
@@ -54,7 +60,9 @@ const JamaahService = {
     const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
 
     if (!response.ok) {
-      console.error(`Failed to delete Jamaah with id ${id}`);
+      const errorBody = await response.text(); 
+      console.error(`Failed to delete Jamaah with id ${id}:`, errorBody);
+      throw new Error(`Failed to delete Jamaah with id ${id}`);
     }
   },
 };

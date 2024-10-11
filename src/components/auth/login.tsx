@@ -25,8 +25,9 @@ const LoginPage = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 text-gray-900 bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 text-white-900 bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            admin@example.com
           </div>
           <div>
             <input
@@ -37,6 +38,7 @@ const LoginPage = () => {
               required
               className="w-full px-4 py-2 text-gray-900 bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            password123
           </div>
           <button
             type="submit"

@@ -3,14 +3,25 @@ import { useState, useEffect } from 'react';
 import { Jamaah } from '../../../interface/Jamaah';
 import JamaahService from '../../../services/JamaahService';
 import { useAuth } from '../../../hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import * as XLSX from 'xlsx';
 
 const DataJamaahPage = () => {
   const { logout } = useAuth();
   const [jamaahList, setJamaahList] = useState<Jamaah[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     JamaahService.getAll().then((data) => setJamaahList(data));
   }, []);
+
+  const exportToExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(jamaahList);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Jamaah Data");
+    XLSX.writeFile(wb, "jamaah_data.xlsx");
+  };
+  
 
   const handleDelete = (id: string) => {
     JamaahService.delete(id).then(() => {
@@ -18,10 +29,15 @@ const DataJamaahPage = () => {
     });
   };
 
+  const handleEdit = (id: string) => {
+    router.push(`/admin/data-jamaah/edit/${id}`); 
+  };
+  
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Bulan dimulai dari 0
+    const month = String(date.getMonth() + 1).padStart(2, '0'); 
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
   };
@@ -111,6 +127,18 @@ const DataJamaahPage = () => {
                     >
                       Delete
                     </button>
+                    <button
+                      onClick={exportToExcel}
+                      className="px-6 py-2 bg-green-600 hover:bg-green-500 rounded-md transition duration-300"
+                    >
+                      Export
+                    </button>
+                    <button
+                      onClick={() => handleEdit(jamaah.id)}
+                      className="px-6 py-2 bg-green-600 hover:bg-green-500 rounded-md transition duration-300"
+                    >
+                      Update
+                    </button>                  
                   </div>
                 </td>
               </tr>
