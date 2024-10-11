@@ -5,8 +5,8 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import { Prisma } from '@prisma/client';
 
-// Define the upload directory
-const uploadDirectory = path.join(process.cwd(), 'public', 'uploads');
+// Define the upload directory (use '/tmp' for serverless environments)
+const uploadDirectory = path.join('/tmp');
 
 // Function to validate date format (YYYY-MM-DD)
 function isValidDate(dateString: string) {
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
         berlakuVisa: data.berlakuVisa ? new Date(data.berlakuVisa as string) : null,
         paketDipilih: String(data.paketDipilih),
         kamarDipilih: String(data.kamarDipilih),
-        lampiranKTP: lampiranKTPFileName ? `/uploads/${lampiranKTPFileName}`: String(data.lampiranKTP),
+        lampiranKTP: lampiranKTPFileName ? `/uploads/${lampiranKTPFileName}` : String(data.lampiranKTP),
         lampiranKK: lampiranKKFileName ? `/uploads/${lampiranKKFileName}` : String(data.lampiranKK),
         lampiranFoto: lampiranFotoFileName ? `/uploads/${lampiranFotoFileName}` : String(data.lampiranFoto),
         lampiranPaspor: lampiranPasporFileName ? `/uploads/${lampiranPasporFileName}` : String(data.lampiranPaspor),
