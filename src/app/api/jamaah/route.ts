@@ -25,7 +25,7 @@ export async function GET() {
     const jamaahList = await prisma.jamaah.findMany();
     return NextResponse.json(jamaahList);
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching Jamaah list:', error);
     return NextResponse.json({ error: 'Error fetching data' }, { status: 500 });
   }
 }
@@ -47,6 +47,7 @@ export async function POST(request: Request) {
     // Create the upload directory if it doesn't exist
     await fs.mkdir(uploadDirectory, { recursive: true });
 
+    // File processing
     const lampiranKTPFile = formData.get('lampiranKTP') as File | null;
     const lampiranKKFile = formData.get('lampiranKK') as File | null;
     const lampiranFotoFile = formData.get('lampiranFoto') as File | null;
@@ -108,10 +109,12 @@ export async function POST(request: Request) {
       },
     });
 
+    console.log('New Jamaah created:', newJamaah);
+
     return NextResponse.json(newJamaah);
   } catch (error) {
     const errorMessage = (error instanceof Error) ? error.message : 'Unknown error occurred';
-    console.error(errorMessage);
+    console.error('Error while creating Jamaah:', errorMessage);
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
@@ -126,12 +129,12 @@ export async function DELETE(request: Request) {
 
   try {
     await prisma.jamaah.delete({
-      where: { id: id}, 
+      where: { id: Number(id) }, 
     });
     return NextResponse.json({ message: 'Jamaah deleted successfully' });
   } catch (error) {
     const errorMessage = (error instanceof Error) ? error.message : 'Unknown error occurred';
-    console.error(errorMessage);
+    console.error('Error deleting Jamaah:', errorMessage);
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

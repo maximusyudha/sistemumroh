@@ -12,8 +12,8 @@ export interface Jamaah {
     jenisKelamin: string;
     noPaspor: string;
     masaBerlakuPaspor: string;
-    noVisa?: string;
-    berlakuSampaiVisa?: string;
+    noVisa: string;
+    berlakuVisa: string;
     paketDipilih: string;
     kamarDipilih: string;
     lampiranKTP: string;

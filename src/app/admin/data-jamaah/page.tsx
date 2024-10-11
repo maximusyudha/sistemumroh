@@ -18,6 +18,14 @@ const DataJamaahPage = () => {
     });
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Bulan dimulai dari 0
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-6">
       <h1 className="text-4xl font-bold mb-8">Data Jamaah</h1>
@@ -49,7 +57,7 @@ const DataJamaahPage = () => {
               <th className="px-4 py-2 text-sm font-semibold">Paket</th>
               <th className="px-4 py-2 text-sm font-semibold">Kamar</th>
               <th className="px-4 py-2 text-sm font-semibold">No. Visa</th>
-              <th className="px-4 py-2 text-sm font-semibold">Berlaku Sampai</th>
+              <th className="px-4 py-2 text-sm font-semibold">Berlaku Visa</th>
               <th className="px-4 py-2 text-sm font-semibold">Lampiran KTP</th>
               <th className="px-4 py-2 text-sm font-semibold">Lampiran KK</th>
               <th className="px-4 py-2 text-sm font-semibold">Lampiran Foto</th>
@@ -66,13 +74,13 @@ const DataJamaahPage = () => {
                 <td className="px-4 py-2">{jamaah.namaLengkap}</td>
                 <td className="px-4 py-2">{jamaah.nik}</td>
                 <td className="px-4 py-2">{jamaah.tempatLahir}</td>
-                <td className="px-4 py-2">{jamaah.tanggalLahir}</td>
+                <td className="px-4 py-2">{formatDate(jamaah.tanggalLahir)}</td>
                 <td className="px-4 py-2">{jamaah.jenisKelamin}</td> 
                 <td className="px-4 py-2">{jamaah.alamat}</td>
                 <td className="px-4 py-2">{jamaah.paketDipilih}</td>
                 <td className='px-4 py-2'>{jamaah.kamarDipilih}</td>
                 <td className="px-4 py-2">{jamaah.noVisa}</td>
-                <td className="px-4 py-2">{jamaah.berlakuSampaiVisa}</td>
+                <td className="px-4 py-2">{formatDate(jamaah.berlakuVisa)}</td>
                 <td className="px-4 py-2">
                   <a href={jamaah.lampiranKTP} target="_blank" rel="noopener noreferrer">
                     Lihat KTP
@@ -94,7 +102,7 @@ const DataJamaahPage = () => {
                   </a>
                 </td>
                 <td className="px-4 py-2">{jamaah.noPaspor}</td>
-                <td className="px-4 py-2">{jamaah.masaBerlakuPaspor}</td>
+                <td className="px-4 py-2">{formatDate(jamaah.masaBerlakuPaspor)}</td>
                 <td className="px-4 py-2">
                   <div className="flex gap-2">
                     <button
