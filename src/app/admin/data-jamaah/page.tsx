@@ -97,7 +97,7 @@ const DataJamaahPage = () => {
                 <td className='px-4 py-2'>{jamaah.kamarDipilih}</td>
                 <td className="px-4 py-2">{jamaah.noVisa}</td>
                 <td className="px-4 py-2">{formatDate(jamaah.berlakuVisa)}</td>
-                {/* <td className="px-4 py-2">
+                <td className="px-4 py-2">
                   <a href={jamaah.lampiranKTP} target="_blank" rel="noopener noreferrer">
                     Lihat KTP
                   </a>
@@ -116,7 +116,7 @@ const DataJamaahPage = () => {
                   <a href={jamaah.lampiranPaspor} target="_blank" rel="noopener noreferrer">
                     Lihat Paspor
                   </a>
-                </td> */}
+                </td>
                 <td className="px-4 py-2">{jamaah.noPaspor}</td>
                 <td className="px-4 py-2">{formatDate(jamaah.masaBerlakuPaspor)}</td>
                 <td className="px-4 py-2">
