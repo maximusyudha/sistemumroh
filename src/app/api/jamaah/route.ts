@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../lib/supabase'; // Import supabase client
+import { supabase } from '../../lib/supabase'; // Import Supabase client
 import { randomUUID } from 'crypto';
 
 // Function to validate date format (YYYY-MM-DD)
@@ -14,20 +14,24 @@ const generateUniqueFileName = (originalName: string) => {
   return `${randomUUID()}.${fileExtension}`;
 };
 
-// Helper function to upload files to Supabase storage
+// Helper function to upload files to Supabase storage directly
 async function uploadFile(file: File | null, folder: string) {
   if (!file) return null; // No file to upload
   const fileName = generateUniqueFileName(file.name); // Generate unique filename
+
+  // Read the file content (array buffer) to upload it to Supabase directly
+  const fileBuffer = await file.arrayBuffer();
+
   const { data: fileData, error } = await supabase.storage
     .from(folder)
-    .upload(fileName, file);
+    .upload(fileName, new Blob([fileBuffer], { type: file.type }));
 
   if (error) {
     console.error(`Error uploading file ${file.name}:`, error.message);
     throw new Error(`File upload failed for ${file.name}`);
   }
 
-  // Return full file path for storage
+  // Return the path where the file is stored in Supabase
   return fileData?.path;
 }
 
@@ -51,7 +55,7 @@ export async function POST(request: Request) {
     const lampiranFotoFile = formData.get('lampiranFoto') as File | null;
     const lampiranPasporFile = formData.get('lampiranPaspor') as File | null;
 
-    // Upload files to Supabase storage (if they exist)
+    // Upload files to Supabase storage directly (if they exist)
     const lampiranKTPPath = await uploadFile(lampiranKTPFile, 'uploads');
     const lampiranKKPath = await uploadFile(lampiranKKFile, 'uploads');
     const lampiranFotoPath = await uploadFile(lampiranFotoFile, 'uploads');
@@ -83,7 +87,7 @@ export async function POST(request: Request) {
 
     if (error) throw error;
 
-    // Respond with newly created Jamaah data
+    // Respond with the newly created Jamaah data
     return NextResponse.json(newJamaah);
   } catch (error) {
     const errorMessage = (error instanceof Error) ? error.message : 'Unknown error occurred';
