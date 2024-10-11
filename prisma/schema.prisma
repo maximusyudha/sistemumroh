@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Jamaah {
-  id                String   @id @default(uuid())
+  id                Int      @id @default(autoincrement()) 
   namaLengkap       String
   nik               String
   tempatLahir       String
@@ -21,8 +21,8 @@ model Jamaah {
   jenisKelamin      String
   noPaspor          String
   masaBerlakuPaspor DateTime
-  noVisa            String?
-  berlakuVisa       DateTime?
+  noVisa            String? 
+  berlakuVisa       DateTime? 
   paketDipilih      String
   kamarDipilih      String
   lampiranKTP       String
@@ -30,3 +30,4 @@ model Jamaah {
   lampiranFoto      String
   lampiranPaspor    String
 }
+

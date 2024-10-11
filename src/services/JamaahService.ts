@@ -54,7 +54,7 @@ const JamaahService = {
     const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
 
     if (!response.ok) {
-      throw new Error(`Failed to delete Jamaah with id ${id}`);
+      console.error(`Failed to delete Jamaah with id ${id}`);
     }
   },
 };
