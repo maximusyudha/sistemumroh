@@ -2,10 +2,11 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import JamaahService from '../../../../../services/JamaahService'; 
-import router from 'next/navigation';
+import {useRouter} from 'next/navigation';
 const EditJamaahPage = () => {
     const params = useParams();
     const { id } = params;
+    const router = useRouter();
 
   const [namaLengkap, setNamaLengkap] = useState('');
   const [nik, setNik] = useState<string>(''); // nik should be a string
@@ -96,7 +97,7 @@ const EditJamaahPage = () => {
     try {
       await JamaahService.update(String(id), formData as never);
       alert('Data successfully updated!');
-      router.redirect('/admin/data-jamaah');
+      router.push('/admin/data-jamaah');
     } catch (error) {
       alert(`Failed to update data: ${error}`);
     }
