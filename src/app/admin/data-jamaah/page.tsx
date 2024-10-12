@@ -48,7 +48,7 @@ const DataJamaahPage = () => {
 
   const handleEdit = (id: string) => {
     router.push(`/admin/data-jamaah/edit/${id}`); 
-  };
+};
   
 
   const formatDate = (dateString: string) => {

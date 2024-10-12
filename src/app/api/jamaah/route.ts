@@ -4,7 +4,6 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { Prisma } from '@prisma/client';
-
 const uploadDirectory = path.join('/tmp');
 
 // Function to validate date format (YYYY-MM-DD)

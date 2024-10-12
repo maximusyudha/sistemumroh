@@ -13,16 +13,13 @@ const JamaahService = {
     return response.json();
   },
   
-  getById: async (id: string): Promise<Jamaah> => {
-    const response = await fetch(`${API_URL}/${id}`);
-    if (!response.ok) {
-      const errorBody = await response.text(); 
-      console.error(`Failed to fetch Jamaah with id ${id}:`, errorBody);
-      throw new Error(`Failed to fetch Jamaah with id ${id}`);
-    }
-    return response.json();
-  },
-  
+getById: async (id: string): Promise<Jamaah> => {
+  const response = await fetch(`${API_URL}?id=${id}`); 
+  if (!response.ok) {
+    throw new Error(`Failed to fetch Jamaah with id ${id}`);
+  }
+  return response.json();
+},
   add: async (data: FormData): Promise<Jamaah> => {
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -39,7 +36,7 @@ const JamaahService = {
   },
   
   update: async (id: string, data: Jamaah): Promise<Jamaah> => {
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await fetch(`${API_URL}?id=${id}`, {  
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -48,8 +45,6 @@ const JamaahService = {
     });
 
     if (!response.ok) {
-      const errorBody = await response.text(); // Capture the error body
-      console.error(`Failed to update Jamaah with id ${id}:`, errorBody);
       throw new Error(`Failed to update Jamaah with id ${id}`);
     }
 
