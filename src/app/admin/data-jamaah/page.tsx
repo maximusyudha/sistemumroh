@@ -45,9 +45,6 @@ const DataJamaahPage = () => {
         alert(`Failed to delete Jamaah: ${error.message}`);
       });
   };
-  
-  
-  
 
   const handleEdit = (id: string) => {
     router.push(`/admin/data-jamaah/edit/${id}`); 
