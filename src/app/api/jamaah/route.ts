@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../lib/prisma';
-import { supabase } from '../../lib/supabase'; // import supabase client
-import { randomUUID } from 'crypto';
+import { promises as fs } from 'fs';
 import path from 'path';
+import { randomUUID } from 'crypto';
 import { Prisma } from '@prisma/client';
+
+// Define the upload directory (use '/tmp' for serverless environments)
+const uploadDirectory = path.join(process.cwd(), 'public', 'uploads');
+
+//const uploadDirectory = path.join('/tmp');
 
 // Function to validate date format (YYYY-MM-DD)
 function isValidDate(dateString: string) {
@@ -18,24 +23,22 @@ const generateUniqueFileName = (originalName: string) => {
   return `${fileNameWithoutExt}-${randomUUID()}${fileExtension}`;
 };
 
-// Helper function to upload a file to Supabase Storage
-const uploadToSupabase = async (file: File, bucket: string) => {
-  const fileName = generateUniqueFileName(file.name);
-  const { data, error } = await supabase.storage.from(bucket).upload(fileName, file);
-
-  if (error) {
-    throw new Error(`Failed to upload ${file.name}: ${error.message}`);
+export async function GET() {
+  try {
+    const jamaahList = await prisma.jamaah.findMany();
+    return NextResponse.json(jamaahList);
+  } catch (error) {
+    console.error('Error fetching Jamaah list:', error);
+    return NextResponse.json({ error: 'Error fetching data' }, { status: 500 });
   }
-
-  return data.path; // Return the file path
-};
+}
 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const data = Object.fromEntries(formData);
 
-    // Validate date formats
+    // Validasi format tanggal lahir dan masa berlaku paspor
     if (!isValidDate(data.tanggalLahir as string)) {
       throw new Error('Invalid date format for tanggalLahir');
     }
@@ -44,29 +47,43 @@ export async function POST(request: Request) {
       throw new Error('Invalid date format for masaBerlakuPaspor');
     }
 
-    // File processing using Supabase Storage
-    const bucketName = 'uploads'; // Your Supabase storage bucket name
+    // Create the upload directory if it doesn't exist
+    await fs.mkdir(uploadDirectory, { recursive: true });
+
+    // File processing
     const lampiranKTPFile = formData.get('lampiranKTP') as File | null;
     const lampiranKKFile = formData.get('lampiranKK') as File | null;
     const lampiranFotoFile = formData.get('lampiranFoto') as File | null;
     const lampiranPasporFile = formData.get('lampiranPaspor') as File | null;
 
-    let lampiranKTPPath = '', lampiranKKPath = '', lampiranFotoPath = '', lampiranPasporPath = '';
+    let lampiranKTPFileName = '', lampiranKKFileName = '', lampiranFotoFileName = '', lampiranPasporFileName = '';
 
+    // Upload lampiranKTP jika ada
     if (lampiranKTPFile) {
-      lampiranKTPPath = await uploadToSupabase(lampiranKTPFile, bucketName);
+      lampiranKTPFileName = generateUniqueFileName(lampiranKTPFile.name);
+      const lampiranKTPPath = path.join(uploadDirectory, lampiranKTPFileName);
+      await fs.writeFile(lampiranKTPPath, Buffer.from(await lampiranKTPFile.arrayBuffer()));
     }
 
+    // Upload lampiranKK jika ada
     if (lampiranKKFile) {
-      lampiranKKPath = await uploadToSupabase(lampiranKKFile, bucketName);
+      lampiranKKFileName = generateUniqueFileName(lampiranKKFile.name);
+      const lampiranKKPath = path.join(uploadDirectory, lampiranKKFileName);
+      await fs.writeFile(lampiranKKPath, Buffer.from(await lampiranKKFile.arrayBuffer()));
     }
 
+    // Upload lampiranFoto jika ada
     if (lampiranFotoFile) {
-      lampiranFotoPath = await uploadToSupabase(lampiranFotoFile, bucketName);
+      lampiranFotoFileName = generateUniqueFileName(lampiranFotoFile.name);
+      const lampiranFotoPath = path.join(uploadDirectory, lampiranFotoFileName);
+      await fs.writeFile(lampiranFotoPath, Buffer.from(await lampiranFotoFile.arrayBuffer()));
     }
 
+    // Upload lampiranPaspor jika ada
     if (lampiranPasporFile) {
-      lampiranPasporPath = await uploadToSupabase(lampiranPasporFile, bucketName);
+      lampiranPasporFileName = generateUniqueFileName(lampiranPasporFile.name);
+      const lampiranPasporPath = path.join(uploadDirectory, lampiranPasporFileName);
+      await fs.writeFile(lampiranPasporPath, Buffer.from(await lampiranPasporFile.arrayBuffer()));
     }
 
     // Insert new Jamaah into the database
@@ -88,12 +105,14 @@ export async function POST(request: Request) {
         berlakuVisa: data.berlakuVisa ? new Date(data.berlakuVisa as string) : null,
         paketDipilih: String(data.paketDipilih),
         kamarDipilih: String(data.kamarDipilih),
-        lampiranKTP: lampiranKTPPath || String(data.lampiranKTP),
-        lampiranKK: lampiranKKPath || String(data.lampiranKK),
-        lampiranFoto: lampiranFotoPath || String(data.lampiranFoto),
-        lampiranPaspor: lampiranPasporPath || String(data.lampiranPaspor),
+        lampiranKTP: lampiranKTPFileName ? `/uploads/${lampiranKTPFileName}` : String(data.lampiranKTP),
+        lampiranKK: lampiranKKFileName ? `/uploads/${lampiranKKFileName}` : String(data.lampiranKK),
+        lampiranFoto: lampiranFotoFileName ? `/uploads/${lampiranFotoFileName}` : String(data.lampiranFoto),
+        lampiranPaspor: lampiranPasporFileName ? `/uploads/${lampiranPasporFileName}` : String(data.lampiranPaspor),
       },
     });
+
+    console.log('New Jamaah created:', newJamaah);
 
     return NextResponse.json(newJamaah);
   } catch (error) {
@@ -102,7 +121,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
-
 
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
