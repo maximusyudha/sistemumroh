@@ -5,10 +5,7 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import { Prisma } from '@prisma/client';
 
-// Define the upload directory (use '/tmp' for serverless environments)
-const uploadDirectory = path.join(process.cwd(), 'public', 'uploads');
-
-//const uploadDirectory = path.join('/tmp');
+const uploadDirectory = path.join('/tmp');
 
 // Function to validate date format (YYYY-MM-DD)
 function isValidDate(dateString: string) {
